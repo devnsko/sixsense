@@ -1,208 +1,13 @@
-// // *** The Sixth Sense City ***
-// // prototype V2P (Vehicle-to-Pedestrian) или I2P (Infrastructure-to-Pedestrian)
-// #include <Arduino.h>
 
-// constexpr uint8_t VIBRO_LEFT_PIN  = 5;
-// constexpr uint8_t VIBRO_RIGHT_PIN = 6;
-// constexpr uint8_t VIBRO_PWM_MAX   = 255;
-
-// // Call once at startup
-// void VibroInit() {
-//     pinMode(VIBRO_LEFT_PIN, OUTPUT);
-//     pinMode(VIBRO_RIGHT_PIN, OUTPUT);
-//     analogWrite(VIBRO_LEFT_PIN, 0);
-//     analogWrite(VIBRO_RIGHT_PIN, 0);
-// }
-
-// static inline void setVibro(uint8_t pin, uint8_t intensity) {
-//     analogWrite(pin, intensity);
-// }
-
-// // Left motor: intensity 0-255, duration in ms
-// void VibroLeft(uint8_t intensity = 200, unsigned long durationMs = 200) {
-//     setVibro(VIBRO_LEFT_PIN, intensity);
-//     delay(durationMs);
-//     setVibro(VIBRO_LEFT_PIN, 0);
-// }
-
-// // Right motor
-// void VibroRight(uint8_t intensity = 200, unsigned long durationMs = 200) {
-//     setVibro(VIBRO_RIGHT_PIN, intensity);
-//     delay(durationMs);
-//     setVibro(VIBRO_RIGHT_PIN, 0);
-// }
-
-// // Both motors
-// void VibroBoth(uint8_t intensity = 200, unsigned long durationMs = 200) {
-//     setVibro(VIBRO_LEFT_PIN, intensity);
-//     setVibro(VIBRO_RIGHT_PIN, intensity);
-//     delay(durationMs);
-//     setVibro(VIBRO_LEFT_PIN, 0);
-//     setVibro(VIBRO_RIGHT_PIN, 0);
-// }
-
-// // Short both: quick pulse
-// void VibroShortBoth() {
-//     VibroBoth(180, 100);
-// }
-
-// // Long strong both: full power long pulse
-// void VibroLongStrongBoth() {
-//     VibroBoth(VIBRO_PWM_MAX, 1000);
-// }
-
-// void setup() {
-//     VibroInit();
-//     // Example usage
-//     VibroShortBoth();
-//     delay(500);
-//     VibroLongStrongBoth();
-// }
-
-// void loop() {
-//     static unsigned long lastShort = 0;
-//     static unsigned long lastLong  = 0;
-//     const unsigned long SHORT_INTERVAL = 2000;  // ms between short pulses
-//     const unsigned long LONG_INTERVAL  = 10000; // ms between long strong pulses
-
-//     unsigned long now = millis();
-
-//     if (now - lastShort >= SHORT_INTERVAL) {
-//         lastShort = now;
-//         VibroShortBoth();
-//     }
-
-//     if (now - lastLong >= LONG_INTERVAL) {
-//         lastLong = now;
-//         VibroLongStrongBoth();
-//     }
-
-//     delay(10); // small idle to avoid a tight busy-loop
-// }
-
-
-// #include <Arduino.h>
-// #include <WiFiS3.h>
-
-// const int motorPin = 9;
-// const char* TARGET_PREFIX = "NG_";
-
-// // Настройки вибрации
-// const int ZONE_FAR_RSSI = -65;      // ~1 метр
-// const int ZONE_MEDIUM_RSSI = -55;   // ~0.4 метра  
-// const int ZONE_CLOSE_RSSI = -45;    // <0.4 метра
-
-// const int VIBRATION_FAR = 80;
-// const int VIBRATION_MEDIUM = 150;
-// const int VIBRATION_CLOSE = 255;
-
-// // Переменные состояния
-// int previousRSSI = -100;
-// unsigned long lastScanTime = 0;
-// const int SCAN_INTERVAL = 300;
-
-
-// int findStrongestRSSI() {
-//   int numNetworks = WiFi.scanNetworks();
-//   int strongestRSSI = -100;
-  
-//   for (int i = 0; i < numNetworks; i++) {
-//     String ssid = WiFi.SSID(i);
-//     int rssi = WiFi.RSSI(i);
-    
-//     if (ssid.startsWith(TARGET_PREFIX) && rssi > strongestRSSI) {
-//       strongestRSSI = rssi;
-//     }
-//   }
-  
-//   return strongestRSSI;
-// }
-
-// void controlVibration(int rssi) {
-//   int vibrationPower = 0;
-//   String zone = "";
-  
-//   if (rssi >= ZONE_CLOSE_RSSI) {
-//     vibrationPower = VIBRATION_CLOSE;
-//     zone = "CLOSE";
-//   } else if (rssi >= ZONE_MEDIUM_RSSI) {
-//     vibrationPower = VIBRATION_MEDIUM;
-//     zone = "MEDIUM";
-//   } else if (rssi >= ZONE_FAR_RSSI) {
-//     vibrationPower = VIBRATION_FAR;
-//     zone = "FAR";
-//   }
-  
-//   analogWrite(motorPin, vibrationPower);
-  
-//   Serial.print("RSSI:");
-//   Serial.print(rssi);
-//   Serial.print(" ZONE:");
-//   Serial.print(zone);
-//   Serial.print(" VIB:");
-//   Serial.println(vibrationPower);
-// }
-
-// void analyzeMovement(int currentRSSI) {
-//   int rssiChange = currentRSSI - previousRSSI;
-  
-//   if (rssiChange > 3) {
-//     Serial.println("MOVEMENT:APPROACHING");
-//   } else if (rssiChange < -3) {
-//     Serial.println("MOVEMENT:RETREATING");
-//   }
-// }
-
-// void processNavigation() {
-//   int currentRSSI = findStrongestRSSI();
-  
-//   if (currentRSSI <= -80) {
-//     analogWrite(motorPin, 0);
-//     Serial.println("NO_SENSORS");
-//     previousRSSI = -100;
-//     return;
-//   }
-  
-//   controlVibration(currentRSSI);
-  
-//   if (previousRSSI != -100) {
-//     analyzeMovement(currentRSSI);
-//   }
-  
-//   previousRSSI = currentRSSI;
-// }
-
-
-// void setup() {
-//   Serial.begin(115200);
-//   pinMode(motorPin, OUTPUT);
-  
-//   // Проверка WiFi модуля
-//   if (WiFi.status() == WL_NO_MODULE) {
-//     Serial.println("❌ WiFi module failed!");
-//     while (true);
-//   }
-  
-//   Serial.println("🚀 BELT DEVICE - Navigation System Started");
-//   Serial.println("📡 Scanning for floor sensors...");
-// }
-
-// void loop() {
-//   unsigned long currentTime = millis();
-  
-//   if (currentTime - lastScanTime >= SCAN_INTERVAL) {
-//     processNavigation();
-//     lastScanTime = currentTime;
-//   }
-// }
 
 #include <Arduino.h>
 #include <WiFiS3.h>
 
 const int motorPin = 9;
+const int typePin = 7;
 const char* TARGET_PREFIX = "NG_";
 
-// Более точные настройки вибрации
+// Настройки вибрации
 const int ZONE_FAR_RSSI = -50;      // ~2 метра
 const int ZONE_MEDIUM_RSSI = -48;   // ~1 метр  
 const int ZONE_CLOSE_RSSI = -45;    // ~0.5 метра
@@ -213,38 +18,40 @@ const int VIBRATION_MEDIUM = 120;
 const int VIBRATION_CLOSE = 200;
 const int VIBRATION_VERY_CLOSE = 255;
 
-// Переменные для улучшенного отслеживания
+// Переменные для быстрого отслеживания
 int previousRSSI = -100;
 unsigned long lastScanTime = 0;
-const int SCAN_INTERVAL = 100; // Увеличили частоту до 10 раз в секунду
-int rssiSamples[5] = {0}; // Буфер для усреднения
+const int SCAN_INTERVAL = 50; // 20 раз в секунду!
+int rssiSamples[3] = {0}; // Меньший буфер для скорости
 int sampleIndex = 0;
+int lastVibration = -1;
+
 
 // Forward declarations: ensure functions used in loop/setup are visible
 void processNavigation();
-int findStrongestRSSI();
+int findStrongestRSSIID();
 int calculateSmoothedRSSI();
-void controlVibration(int rssi);
-void analyzeMovement(int currentRSSI);
+void controlVibration(int rssi, char type);
+
 
 void setup() {
   Serial.begin(115200);
   while (!Serial);
   
   pinMode(motorPin, OUTPUT);
+  pinMode(typePin, OUTPUT);
+
   analogWrite(motorPin, 0);
+  analogWrite(typePin, 0);
   
-  Serial.println("🚀 Belt Device - High Precision Mode");
+  Serial.println("🚀 Belt Device - Ultra Fast Mode");
   
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("❌ WiFi module failed!");
     while (true);
   }
   
-  // Настраиваем WiFi для более быстрого сканирования
-  // WiFi.setScanTimeout(100); // removed: CWifi (WiFiS3) has no setScanTimeout() member
-  // Use the default scan settings or call WiFi.scanNetworks() with desired parameters if needed
-  Serial.println("✅ High precision mode activated");
+  Serial.println("✅ Ultra fast mode activated (20Hz)");
 }
 
 void loop() {
@@ -257,36 +64,39 @@ void loop() {
 }
 
 void processNavigation() {
-  int currentRSSI = findStrongestRSSI();
-  
+  int currentRSSIID = findStrongestRSSIID();
+    if (currentRSSIID == -1) {
+      analogWrite(motorPin, 0);
+      analogWrite(typePin, 0);
+        Serial.println("NO_SENSORS");
+        return;
+    }
+    int currentRSSI = WiFi.RSSI(currentRSSIID);
   if (currentRSSI <= -85) {
-    analogWrite(motorPin, 0);
-    if (previousRSSI > -85) {
+    if (lastVibration != 0) {
+      analogWrite(motorPin, 0);
+      analogWrite(typePin, 0);
+      lastVibration = 0;
       Serial.println("NO_SENSORS");
     }
-    previousRSSI = -100;
     return;
   }
   
-  // Усредняем значения для большей стабильности
+  // Быстрое усреднение (3 samples)
   rssiSamples[sampleIndex] = currentRSSI;
-  sampleIndex = (sampleIndex + 1) % 5;
-  
+  sampleIndex = (sampleIndex + 1) % 3;
+  String rssiName = WiFi.SSID(currentRSSIID);
+  String msg = String("SENSOR:") + rssiName + ":RSSI:" + String(currentRSSI);
+  Serial.println(msg);
   int smoothedRSSI = calculateSmoothedRSSI();
-  
-  controlVibration(smoothedRSSI);
-  
-  if (previousRSSI != -100) {
-    analyzeMovement(smoothedRSSI);
-  }
-  
-  previousRSSI = smoothedRSSI;
+  char type = rssiName.charAt(rssiName.length() - 1); // Последний символ SSID как тип
+  controlVibration(smoothedRSSI, type);
 }
 
 int calculateSmoothedRSSI() {
   int sum = 0;
   int count = 0;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     if (rssiSamples[i] != 0) {
       sum += rssiSamples[i];
       count++;
@@ -295,85 +105,108 @@ int calculateSmoothedRSSI() {
   return count > 0 ? sum / count : -100;
 }
 
-int findStrongestRSSI() {
+int findStrongestRSSIID() {
   int numNetworks = WiFi.scanNetworks();
   int strongestRSSI = -100;
-  String closestSensor = "";
+  int strongestRSSIID = -1;
   
-  // Быстрое сканирование с приоритетом на наши сети
+  // Максимально быстрое сканирование
   for (int i = 0; i < numNetworks; i++) {
     String ssid = WiFi.SSID(i);
     int rssi = WiFi.RSSI(i);
     
-    if (ssid.startsWith(TARGET_PREFIX)) {
-      if (rssi > strongestRSSI) {
-        strongestRSSI = rssi;
-        closestSensor = ssid;
-      }
+    if (ssid.startsWith(TARGET_PREFIX) && rssi > strongestRSSI) {
+      strongestRSSI = rssi;
+      strongestRSSIID = i;
     }
   }
   
-  // Быстрый вывод для отладки (только при изменении)
-  static String lastClosest = "";
-  if (closestSensor != "" && closestSensor != lastClosest) {
-    Serial.print("🎯 ");
-    Serial.print(closestSensor);
-    Serial.print(" (");
-    Serial.print(strongestRSSI);
-    Serial.println(" dBm)");
-    lastClosest = closestSensor;
-  }
-  
-  return strongestRSSI;
+  return strongestRSSIID;
 }
 
-void controlVibration(int rssi) {
+void controlVibration(int rssi, char type) {
   int vibrationPower = 0;
-  String zone = "";
   
-  // Более точные зоны с плавными переходами
+  // Быстрое определение зоны
   if (rssi >= ZONE_VERY_CLOSE_RSSI) {
     vibrationPower = VIBRATION_VERY_CLOSE;
-    zone = "VERY_CLOSE";
   } else if (rssi >= ZONE_CLOSE_RSSI) {
-    // Плавный переход между зонами
     vibrationPower = map(rssi, ZONE_CLOSE_RSSI, ZONE_VERY_CLOSE_RSSI, 
                         VIBRATION_CLOSE, VIBRATION_VERY_CLOSE);
-    zone = "CLOSE";
   } else if (rssi >= ZONE_MEDIUM_RSSI) {
     vibrationPower = map(rssi, ZONE_MEDIUM_RSSI, ZONE_CLOSE_RSSI,
                         VIBRATION_MEDIUM, VIBRATION_CLOSE);
-    zone = "MEDIUM";
   } else if (rssi >= ZONE_FAR_RSSI) {
     vibrationPower = map(rssi, ZONE_FAR_RSSI, ZONE_MEDIUM_RSSI,
                         VIBRATION_FAR, VIBRATION_MEDIUM);
-    zone = "FAR";
-  } else {
-    vibrationPower = 0;
-    zone = "OUT_OF_RANGE";
   }
   
   vibrationPower = constrain(vibrationPower, 0, 255);
-  analogWrite(motorPin, vibrationPower);
   
-  // Компактный вывод для частого обновления
-  static int lastPrintedPower = -1;
-  if (vibrationPower != lastPrintedPower) {
-    Serial.print(rssi);
-    Serial.print("dBm ");
-    Serial.print(zone);
-    Serial.print(" ");
+  // Обновляем вибрацию только при изменении
+  if (vibrationPower != lastVibration) {
+    analogWrite(motorPin, vibrationPower);
+    lastVibration = vibrationPower;
+    
+    // Минимальный вывод для скорости
     Serial.println(vibrationPower);
-    lastPrintedPower = vibrationPower;
   }
-}
+if (vibrationPower > 0 && type != '-') {
+    static uint8_t sPulseState = 0;
+    static unsigned long sPulseStart = 0;
+    static char sLastType = 0;
 
-void analyzeMovement(int currentRSSI) {
-  int rssiChange = currentRSSI - previousRSSI;
-  
-  if (rssiChange > 2) {
-    Serial.println("↑ APPROACHING");
-  } else if (rssiChange < -2) {
-    Serial.println("↓ RETREATING");
-  }
+    // reset pulse state when type changes or vibration stops
+    if (type != sLastType || vibrationPower == 0) {
+        sPulseState = 0;
+        sPulseStart = 0;
+        sLastType = type;
+    }
+
+    if (type == 'W') {
+        digitalWrite(typePin, HIGH);
+        // force strong vibration for Wall
+        if (lastVibration != 255) {
+            analogWrite(motorPin, 255);
+            lastVibration = 255;
+        }
+        Serial.println("TYPE:Wall");
+    } else if (type == 'S') {
+        digitalWrite(typePin, LOW);
+        // Two short non-blocking pulses for Stairs
+        const unsigned long ON_MS = 60;
+        const unsigned long OFF_MS = 60;
+        unsigned long now = millis();
+
+        if (sPulseState == 0) {
+            // start first pulse
+            analogWrite(motorPin, VIBRATION_CLOSE);
+            lastVibration = VIBRATION_CLOSE;
+            sPulseStart = now;
+            sPulseState = 1;
+            Serial.println("TYPE:Stairs");
+        } else if (sPulseState == 1) {
+            if (now - sPulseStart >= ON_MS) {
+                analogWrite(motorPin, 0);
+                lastVibration = 0;
+                sPulseStart = now;
+                sPulseState = 2;
+            }
+        } else if (sPulseState == 2) {
+            if (now - sPulseStart >= OFF_MS) {
+                analogWrite(motorPin, VIBRATION_CLOSE);
+                lastVibration = VIBRATION_CLOSE;
+                sPulseStart = now;
+                sPulseState = 3;
+            }
+        } else if (sPulseState == 3) {
+            if (now - sPulseStart >= ON_MS) {
+                analogWrite(motorPin, 0);
+                lastVibration = 0;
+                // finished sequence - reset so next trigger can start again
+                sPulseState = 0;
+            }
+        }
+    }
+}
 }
